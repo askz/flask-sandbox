@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 from datetime import datetime
 from flask import Flask, request, flash, url_for, redirect, render_template, abort, Response
 from functools import wraps
@@ -81,7 +82,7 @@ def requires_admin(f):
     return decorated
 
 
-def returns_json(f):
+def returns_json(f):   
     @wraps(f)
     def decorated_function(*args, **kwargs):
         r = f(*args, **kwargs)
@@ -118,7 +119,9 @@ def create_user():
 
 
 def send_msg(code, message, missingFields=[], headers={}):
-    error = {'code': code, 'message': message, 'missingFields': missingFields}
+    error = {'code': code, 
+            'message': message, 
+            'missingFields': missingFields}
     return Response(json.dumps(error), error['code'], headers)
 
 @app.route('/user/<int:id>', methods=['DELETE'])
@@ -128,20 +131,21 @@ def send_msg(code, message, missingFields=[], headers={}):
 def delete_user(id):
     """Returns one user with matching id."""
     user = Users.query.filter_by(id=id).first()
+    user.delete()
     if not user:
         return send_msg(404, 'Not Found')
     return send_msg(204, "No data")
 
-@app.route('/user/<int:id>', methods=['PUT'])
-@requires_auth
-@requires_admin
-@returns_json
-def update_user(id):
-    user = Users.query.filter_by(id=id).first()
-    json_data = request.get_json(force=True)
+# @app.route('/user/<int:id>', methods=['PUT'])
+# @requires_auth
+# @requires_admin
+# @returns_json
+# def update_user(id):
+#     user = Users.query.filter_by(id=id).first()
+#     json_data = request.get_json(force=True)
     
-    user.update
-    db.session.commit()
+#     user.update
+#     db.session.commit()
 
 @app.route('/user/<int:id>', methods=['GET'])
 @requires_auth
@@ -149,7 +153,7 @@ def update_user(id):
 @returns_json
 def show_user(id):
     """Returns one user with matching id."""
-    user = Users.query.filter_by(id=id)
+    user = Users.query.filter_by(id=id).first()
     if not user:
         return send_msg(404, 'Not Found')
     user = user.as_dict()
